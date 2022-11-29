@@ -8,3 +8,5 @@ test-coverage:
 	npm test -- --coverage
 test:
 	npm test
+page-loader:
+	node bin/page-loader.js
