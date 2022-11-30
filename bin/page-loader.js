@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 
 import { Command } from 'commander';
+import path from 'path';
 import pageloader from '../src/index.js';
-import { pathDownloaded } from '../src/utils.js';
+import { urlFile } from '../src/utils.js';
 
 const program = new Command();
 
@@ -16,7 +17,10 @@ program
   .action((url) => {
     pageloader(url, program.opts().output)
       .then(() => {
-        console.log(`Page was successfully downloaded into ${pathDownloaded(url, program.opts().output)}`);
+        console.log(`Page was successfully downloaded into ${path.join(program.opts().output, urlFile(url))}`);
+      }).catch((error) => {
+        console.error(error);
+        process.exit(1);
       });
   });
 

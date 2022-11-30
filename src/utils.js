@@ -1,13 +1,16 @@
 import path from 'path';
 
-const createNameFile = (url) => {
-  const nameFile = `${url.split('//')[1].replace(/[^a-z0-9]/ig, '-')}.html`;
-  return nameFile;
+const replaceSymbol = (str) => str.replace(/[^a-z0-9]/ig, '-');
+
+export const urlFile = (url) => {
+  const { hostname, pathname } = new URL(url);
+  const { ext, dir, name } = path.parse(pathname);
+  const str = replaceSymbol(path.join(hostname, dir === '/' ? '' : dir, name));
+  return (ext) ? `${str}${ext}` : `${str}.html`;
 };
 
-const pathDownloaded = (url, pathDown) => {
-  const pathDownload = path.join(pathDown, createNameFile(url));
-  return pathDownload;
+export const urlDirectory = (url) => {
+  const { hostname, pathname } = new URL(url);
+  const str = pathname === '/' ? hostname : path.join(hostname, pathname);
+  return `${replaceSymbol(str)}_files`;
 };
-
-export { createNameFile, pathDownloaded };
