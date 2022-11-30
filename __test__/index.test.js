@@ -1,8 +1,14 @@
 import { test, expect } from '@jest/globals';
-import { createNameFile } from '../src/utils.js';
+import { urlFile, urlDirectory } from '../src/utils.js';
 
-test('createNameFile', () => {
+test('urlFile', () => {
   const nameFile = 'page-loader-hexlet-repl-co.html';
-  const nameFileActual = createNameFile('https://page-loader.hexlet.repl.co');
+  const nameFileActual = urlFile('https://page-loader.hexlet.repl.co');
+  expect(nameFileActual).toBe(nameFile);
+});
+
+test('urlDirectory', () => {
+  const nameFile = 'page-loader-hexlet-repl-co_files';
+  const nameFileActual = urlDirectory('https://page-loader.hexlet.repl.co');
   expect(nameFileActual).toBe(nameFile);
 });
