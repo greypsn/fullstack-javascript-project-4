@@ -18,8 +18,9 @@ program
     pageloader(url, program.opts().output)
       .then(() => {
         console.log(`Page was successfully downloaded into ${path.join(program.opts().output, urlFile(url))}`);
-      }).catch((error) => {
-        console.error(error);
+      })
+      .catch((error) => {
+        console.error(error.message);
         process.exit(1);
       });
   });
