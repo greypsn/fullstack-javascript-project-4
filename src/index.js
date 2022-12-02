@@ -23,7 +23,7 @@ configDebug({
 
 const downloadFile = (pathFile, url, src) => {
   const pathFilesHtml = path.join(pathFile, urlDirectory(url));
-  const fileName = urlFile(path.join(url, src));
+  const fileName = urlFile(path.join(new URL(url).origin, src));
   axios.get(path.join(url, src), { responseType: 'stream', validateStatus: (status) => status === 200 })
     .then((response) => fs.writeFile(path.join(pathFilesHtml, fileName), response.data))
     .catch((error) => console.log(error));
@@ -52,8 +52,15 @@ const preparationHtml = (html, url) => {
   tagsKey.map((tag) => {
     $(tag).each(function () {
       const urlDownload = $(this).attr(tagsAttr[tag]);
-      urlsDownload.push(urlDownload);
-      $(this).attr(tagsAttr[tag], path.join(urlDirectory(url), urlFile(url + urlDownload)));
+      const urlHost = new URL(url);
+      const urlHostOther = new URL(urlDownload, [url]);
+      if (urlHostOther.hostname === urlHost.hostname) {
+        urlsDownload.push(urlHostOther.pathname);
+        $(this).attr(
+          tagsAttr[tag],
+          path.join(urlDirectory(urlHost.href), urlFile(urlHost.origin + urlHostOther.pathname)),
+        );
+      }
     });
     return true;
   });
