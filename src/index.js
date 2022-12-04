@@ -21,27 +21,17 @@ configDebug({
   },
 });
 
-const downloadFile = (pathFile, url, src) => {
-  const pathFilesHtml = path.join(pathFile, urlDirectory(url));
-  const fileName = urlFile(path.join(new URL(url).origin, src));
-  axios.get(path.join(url, src), { responseType: 'stream', validateStatus: (status) => status === 200 })
-    .then((response) => fs.writeFile(path.join(pathFilesHtml, fileName), response.data))
-    .catch((error) => console.log(error));
-};
+const downloadFile = (pathDirectory, src) => axios.get(path.join(src), { responseType: 'stream', validateStatus: (status) => status === 200 })
+  .then((response) => fs.writeFile(path.join(pathDirectory, urlFile(src)), response.data))
+  .catch((error) => console.log(error));
 
-const downloadFiles = (urls, url, pathFile) => {
-  const pathFilesHtml = path.join(pathFile, urlDirectory(url));
-  return fs.stat(pathFilesHtml)
-    .catch(() => fs.mkdir(pathFilesHtml))
-    .then(() => {
-      const tasks = urls.map((el) => {
-        const task = downloadFile(pathFile, url, el);
-        return { title: url + el, task: () => task };
-      });
-      const taskRun = new Listr(tasks, { concurrent: true });
-      return taskRun.run();
-    })
-    .catch((error) => console.log(error));
+const downloadFiles = (urls, pathDirectory) => {
+  const tasks = urls.map((el) => {
+    const task = downloadFile(pathDirectory, el.href);
+    return { title: el.hostname + el.pathname, task: () => task };
+  });
+  const taskRun = new Listr(tasks, { concurrent: true });
+  return taskRun.run();
 };
 
 const preparationHtml = (html, url) => {
@@ -55,7 +45,7 @@ const preparationHtml = (html, url) => {
       const urlHost = new URL(url);
       const urlHostOther = new URL(urlDownload, [url]);
       if (urlHostOther.hostname === urlHost.hostname) {
-        urlsDownload.push(urlHostOther.pathname);
+        urlsDownload.push(urlHostOther);
         $(this).attr(
           tagsAttr[tag],
           path.join(urlDirectory(urlHost.href), urlFile(urlHost.origin + urlHostOther.pathname)),
@@ -67,20 +57,20 @@ const preparationHtml = (html, url) => {
   return { html: $.html(), urls: urlsDownload };
 };
 
-const pageloader = (url, pathFile = process.cwd()) => {
-  const nameFile = urlFile(url);
-  const pathFull = path.join(pathFile, nameFile);
-  return fs.stat(pathFile)
-    .catch(() => fs.mkdir(pathFile))
+const pageloader = (url, pathDownload = process.cwd()) => {
+  const pathFile = path.join(pathDownload, urlFile(url));
+  const pathDirectory = path.join(pathDownload, urlDirectory(url));
+  return fs.access(pathDirectory)
+    .catch(() => fs.mkdir(pathDirectory))
     .then(() => axios.get(url, { validateStatus: (status) => status === 200 }))
     .then((response) => {
       const { html, urls } = preparationHtml(response.data, url);
-      log(`write file to ${pathFull}`);
-      return fs.writeFile(pathFull, html).then(() => urls); // проброс urls дальше
+      log(`write file to ${pathFile}`);
+      return fs.writeFile(pathFile, html).then(() => urls); // проброс urls дальше
     })
     .then((urls) => {
-      log(`write files to ${pathFile}`);
-      return downloadFiles(urls, url, pathFile);
+      log(`download files to ${pathDirectory}`);
+      return downloadFiles(urls, pathDirectory);
     });
 };
 export default pageloader;
