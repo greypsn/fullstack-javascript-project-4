@@ -23,7 +23,7 @@ configDebug({
 
 const downloadFile = (pathDirectory, src) => axios.get(path.join(src), { responseType: 'stream', validateStatus: (status) => status === 200 })
   .then((response) => fs.writeFile(path.join(pathDirectory, urlFile(src)), response.data))
-  .catch((error) => console.log(error));
+  .catch((error) => console.error()(error));
 
 const downloadFiles = (urls, pathDirectory) => {
   const tasks = urls.map((el) => {

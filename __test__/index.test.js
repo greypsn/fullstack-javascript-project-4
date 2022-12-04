@@ -26,16 +26,16 @@ const fixturesFiles = {
 };
 
 beforeEach(async () => {
-  nock(/ru\.hexlet\.io/)
-    .get(/\/courses/)
+  nock('https://ru.hexlet.io')
+    .get('/courses')
     .replyWithFile(200, getFixturePath(fixturesFiles.html))
-    .get(/\/assets\/professions\/nodejs\.png/)
+    .get('/assets/professions/nodejs.png')
     .replyWithFile(200, getFixturePath(fixturesFiles.png))
-    .get(/\/packs\/js\/runtime\.js/)
+    .get('/packs/js/runtime.js')
     .replyWithFile(200, getFixturePath(fixturesFiles.js))
-    .get(/\/assets\/application\.css/)
+    .get('/assets/application.css')
     .replyWithFile(200, getFixturePath(fixturesFiles.css))
-    .get(/\/courses/)
+    .get('/courses')
     .replyWithFile(200, getFixturePath(fixturesFiles.html));
 
   tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'page-loader-'));
@@ -44,7 +44,6 @@ beforeEach(async () => {
 
 test('load html', async () => {
   const htmlAfter = 'ru-hexlet-io-courses.html';
-  console.log('htmlAfterPath', path.join(tempDir, htmlAfter));
   const htmlAfterPath = path.join(tempDir, htmlAfter);
   const afterHTML = await fs.readFile(htmlAfterPath, 'utf-8');
   const beforeHTML = await fs.readFile(getFixturePath('load-full-after.html'), 'utf-8');
@@ -63,4 +62,31 @@ test.each(testFiles)('$key file', async (el) => {
   const afterFile = await fs.readFile(path.join(tempDir, dirName, el.file), 'utf-8');
   const beforeFile = await fs.readFile(getFixturePath(fixturesFiles[el.key]), 'utf-8');
   expect(afterFile.trim()).toBe(beforeFile.trim());
+});
+
+test('404', async () => {
+  nock('https://incorrect')
+    .get('/err')
+    .replyWithError('incorrect url')
+    .get('/404')
+    .reply(404);
+
+  const err404 = await fs.mkdtemp(path.join(os.tmpdir(), 'page-loader-err-'));
+  await expect(pageloader('https://incorrect/err', err404)).rejects.toThrow();
+  await expect(pageloader('https://incorrect/404', err404)).rejects.toThrow('Request failed with status code 404');
+});
+
+test('file does not exist', async () => {
+  nock('https://hexlet.ru')
+    .get('/lesson')
+    .replyWithFile(200, getFixturePath(fixturesFiles.html));
+  const fakedir = path.join(os.tmpdir(), 'FAKEDIR');
+  await expect(pageloader('https://hexlet.ru/lesson', fakedir)).rejects.toThrow('ENOENT');
+});
+
+test('access err', async () => {
+  nock('https://hexlet.ru')
+    .get('/lesson')
+    .replyWithFile(200, getFixturePath(fixturesFiles.html));
+  await expect(pageloader('https://hexlet.ru/lesson', '/sys')).rejects.toThrow('EACCES');
 });
