@@ -5,7 +5,7 @@
 
 [![Test Coverage](https://api.codeclimate.com/v1/badges/9767d11ef425111b479d/test_coverage)](https://codeclimate.com/github/greypsn/fullstack-javascript-project-4/test_coverage)
 
-[![Build Status](https://github.com/greypsn/fullstack-javascript-project-4/workflows/main.yml/badge.svg)](https://github.com/greypsn/fullstack-javascript-project-4/actions/workflows/main.yml)
+[![my-test](https://github.com/greypsn/fullstack-javascript-project-4/workflows/my-test.yml/badge.svg)](https://github.com/greypsn/fullstack-javascript-project-4/actions/workflows/my-test.yml)
 
 ### This is a project of Page loader utility.
 
